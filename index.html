@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<style>
+html{scroll-behavior:smooth;}
+
+body{
+ margin:0;
+ font-family:sans-serif;
+ background:#0a0f1f;
+ color:#e0f7ff;
+}
+
+header{
+ text-align:center;
+ padding:40px;
+}
+
+h1{
+ font-size:2.8em;
+ color:#00eaff;
+ text-shadow:0 0 20px #00eaff;
+}
+
+.nav a{
+ color:#00eaff;
+ margin:0 10px;
+ text-decoration:none;
+}
+
+.section{
+ max-width:900px;
+ margin:30px auto;
+ padding:20px;
+ background:rgba(0,255,255,0.05);
+ border:1px solid rgba(0,255,255,0.2);
+ border-radius:15px;
+ box-shadow:0 0 20px rgba(0,255,255,0.1);
+}
+
+.slider-box{
+ margin:10px 0;
+}
+
+input[type=range]{
+ width:100%;
+}
+
+.value{
+ font-size:0.9em;
+ color:#00eaff;
+}
+
+canvas{
+ display:block;
+ margin:auto;
+ background:#111;
+ border-radius:10px;
+}
+
+button{
+ width:100%;
+ padding:10px;
+ background:#00eaff;
+ border:none;
+ border-radius:8px;
+ margin-top:10px;
+ cursor:pointer;
+}
+
+.star{font-size:30px;color:gray;cursor:pointer;}
+.star.active{color:gold;}
+</style>
+</head>
+
+<body>
+
+
+<body>
+
+<header>
+<h1>Pendel Lern Website</h1>
+<div class="nav">
+<a href="#theorie">• Theorie</a>
+<a href="#sim">• Simulation</a>
+<a href="#video">• Video</a>
+<a href="#quiz">• Quiz</a>
+<a href="#feedback">• Feedback</a>
+</div>
+</header>
+
+<div id="theorie" class="section">
+  
+<h2>📘 Theorie</h2>
+<p>Ein Pendel ist ein Körper, der an einem Faden aufgehängt ist und durch die Schwerkraft schwingt.</p>
+<p><b>Schwingungsdauer (T):</b> Zeit für eine vollständige Bewegung.</p>
+<p><b>Formel:</b> T = 2π √(L/g)</p>
+<p><b>Wichtig:</b> Die Masse hat keinen Einfluss auf die Schwingungsdauer.</p>
+</div>
+
+<!-- Simulation -->
+<div id="sim" class="section">
+<h2>🎯 Simulation</h2>
+<canvas id="c" width="400" height="350"></canvas>
+
+<div class="slider-box">
+Länge: <span id="vL" class="value"></span>
+<input type="range" id="L" min="0.2" max="2" step="0.1">
+</div>
+
+<div class="slider-box">
+Winkel: <span id="vA" class="value"></span>
+<input type="range" id="A" min="5" max="60">
+</div>
+
+<div class="slider-box">
+Masse: <span id="vM" class="value"></span>
+<input type="range" id="M" min="1" max="5">
+</div>
+
+<p id="T"></p>
+</div>
+
+<!-- Video -->
+<div id="video" class="section">
+<h2>🎥 Erklär Video</h2>
+
+<video width="100%" controls>
+<source src="video.mp4" type="video/mp4">
+</video>
+
+<p style="font-size:0.8em;">
+Quelle: ZDF / Terra X plus / Bilderfest / Tillman Graach / Benjamin Herzberger / Moritz Krause / Phillip Becker / Maximilian Heß<br>
+CC BY 4.0<br>
+https://wirtschaftsphysik.de/cms/wp-content/uploads/2017/11/ap1_v01.pdf
+</p>
+</div>
+
+<!-- Quiz -->
+<div id="quiz" class="section">
+<h2>🧠 Quiz</h2>
+<div id="q"></div>
+<button onclick="checkQuiz()">Auswerten</button>
+<p id="res"></p>
+</div>
+
+<!-- Feedback -->
+<div id="feedback" class="section">
+<h2>⭐ Feedback</h2>
+
+<div id="stars">
+<span class="star" onclick="rate(1)">★</span>
+<span class="star" onclick="rate(2)">★</span>
+<span class="star" onclick="rate(3)">★</span>
+<span class="star" onclick="rate(4)">★</span>
+<span class="star" onclick="rate(5)">★</span>
+</div>
+
+<textarea id="msg" placeholder="Dein Feedback..." style="width:100%;margin-top:10px;"></textarea>
+<button onclick="submitFeedback()">Senden</button>
+
+<p id="avg"></p>
+<div id="all"></div>
+</div>
+
+<script>
+// Simulation
+const ctx=c.getContext("2d");
+let t=0;
+
+function vals(){
+ return {L:+L.value,A:+A.value*Math.PI/180,g:9.81,M:+M.value};
+}
+
+function draw(){
+ let {L,A,g}=vals();
+ let T=2*Math.PI*Math.sqrt(L/g);
+ document.getElementById("T").innerText="T="+T.toFixed(2)+"s";
+
+ let th=A*Math.cos((2*Math.PI/T)*t);
+
+ let x=200+Math.sin(th)*L*150;
+ let y=40+Math.cos(th)*L*150;
+
+ ctx.clearRect(0,0,400,350);
+
+ ctx.beginPath();
+ ctx.moveTo(200,40);
+ ctx.lineTo(x,y);
+ ctx.stroke();
+
+ ctx.beginPath();
+ ctx.arc(x,y,5+vals().M*3,0,Math.PI*2);
+ ctx.fill();
+}
+
+function loop(){draw();t+=0.02;requestAnimationFrame(loop);}
+loop();
+
+
+// Quiz
+const qs=[
+["Wovon hängt T ab?",["Masse","Länge","Farbe"],1],
+["Masse Einfluss?",["Ja","Nein","Manchmal"],1],
+["g?",["9.81","5","20"],0],
+["Länger = ?",["langsamer","schneller","gleich"],0],
+["Formel?",["√L","L²","1/L"],0],
+["Einheit L?",["m","s","kg"],0],
+["Einheit Zeit?",["s","m","kg"],0],
+["Winkel Einfluss?",["kaum","stark","gar nicht"],0]
+];
+
+qs.forEach((q,i)=>{
+ let h=`<p>${q[0]}</p>`;
+ q[1].forEach((o,j)=>{
+  h+=`<input type="radio" name="q${i}" value="${j}">${o}<br>`;
+ });
+ document.getElementById("q").innerHTML+=h;
+});
+
+function checkQuiz(){
+ let s=0;
+ qs.forEach((q,i)=>{
+ let v=document.querySelector(`input[name=q${i}]:checked`);
+ if(v&&v.value==q[2])s++;
+ });
+ res.innerText="Score: "+s+"/"+qs.length;
+}
+
+
+// Feedback
+let selected=0;
+
+function rate(v){
+ selected=v;
+ document.querySelectorAll(".star").forEach((s,i)=>{
+  s.classList.toggle("active",i<v);
+ });
+}
+
+function submitFeedback(){
+ let data=JSON.parse(localStorage.getItem("fb")||"[]");
+ let last=localStorage.getItem("last");
+
+ if(last && Date.now()-last<1800000){
+  alert("Bitte 30 Minuten warten");
+  return;
+ }
+
+ data.push({stars:selected,text:msg.value});
+ localStorage.setItem("fb",JSON.stringify(data));
+ localStorage.setItem("last",Date.now());
+
+ render();
+}
+
+function render(){
+ let data=JSON.parse(localStorage.getItem("fb")||"[]");
+
+ if(data.length===0)return;
+
+ let avg=data.reduce((a,b)=>a+b.stars,0)/data.length;
+ avg.innerText="Ø "+avg.toFixed(2);
+
+ all.innerHTML="";
+ data.forEach(d=>{
+  all.innerHTML+=`<p>${"★".repeat(d.stars)} - ${d.text}</p>`;
+ });
+}
+
+render();
+</script>
+
+</body>
+</html>
